@@ -1,12 +1,15 @@
 package com.rakuraku.android.akbgallery;
 
 import java.util.List;
-import com.squareup.picasso.Picasso;
+
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+
+import com.squareup.picasso.Picasso;
 
 public class GridViewAdapter extends BaseAdapter {
 	private List<ImageInfo> urls;// 画像情報のリスト
@@ -37,6 +40,8 @@ public class GridViewAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
+		
+		Log.d("position", String.valueOf(position));
 
 		SquaredImageView view = (SquaredImageView) convertView;
 		// ビューの作成が初めてなら

@@ -1,32 +1,35 @@
 package com.rakuraku.android.akbgallery;
 
-import java.util.Iterator;
-import com.fasterxml.jackson.databind.JsonNode;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import android.util.Log;
+
 import com.rakuraku.android.util.ParseJson;
 
 public class ParseInstagramImage extends ParseJson {
 
 	private ImageInfoList image_list = null;
-	
+
 	public ParseInstagramImage(ImageInfoList image_list) {
 		super();
 		this.image_list = image_list;
 	}
 
-    // レスポンスの解析
+	// レスポンスの解析
 	@Override
 	public void loadJson(String str) {
-		JsonNode root = getJsonNode(str);
-		if (root != null){
-            // 次のURLを取得
-			this.image_list.setNext_url(root.path("pagination").path("next_url").asText());
-			Iterator<JsonNode> ite = root.path("data").elements();
-			while (ite.hasNext()) {
-				JsonNode j = ite.next();
-                // 画像情報（URL）をリストに追加
-                this.image_list.add(j.path("images").path("thumbnail").path("url").asText(),
-                						j.path("images").path("standard_resolution").path("url").asText());
+		try {
+			JSONArray result = new JSONArray(str);
+			for (int i = 0; i < result.length(); i++) {
+				JSONObject item = result.getJSONObject(i);
+				// {"id":"5i","ext":"jpg","height":186,"width":251,"source_url":"http://mar.2chan.net/jun/b/src/1287236672399.jpg"}
+				String id = item.getString("id");
+				String url = "http://img.tiqav.com/" + id + ".th.jpg";
+				this.image_list.add(url, url);
 			}
+		} catch (Exception e) {
+			Log.e(this.getClass().getSimpleName(), e.getMessage());
 		}
 	}
 }

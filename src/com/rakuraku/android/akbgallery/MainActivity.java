@@ -1,6 +1,5 @@
 package com.rakuraku.android.akbgallery;
 
-import com.rakuraku.android.util.HttpAsyncLoader;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -8,6 +7,7 @@ import android.content.Loader;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,6 +18,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.ImageView;
+
+import com.rakuraku.android.util.HttpAsyncLoader;
 
 public class MainActivity extends Activity {
 
@@ -41,9 +43,11 @@ public class MainActivity extends Activity {
 		private SwipeRefreshLayout swipeRefreshLayout = null;
 
 		// Instagram URL保持クラス
+//		private ImageInfoList image_list = 
+//				new ImageInfoList("https://api.instagram.com/v1/tags/akb48/media/recent?access_token=1701240007.b0ed428.945e7ccfec964180b6407e9c76a55c54"); 
 		private ImageInfoList image_list = 
-				new ImageInfoList("https://api.instagram.com/v1/tags/akb48/media/recent?access_token=1701240007.b0ed428.945e7ccfec964180b6407e9c76a55c54"); 
-
+				new ImageInfoList("http://api.tiqav.com/search.json?q=test"); 
+		
 		// Instagram API解析クラス
 		private ParseInstagramImage parse = new ParseInstagramImage(this.image_list);
 		
@@ -100,7 +104,8 @@ public class MainActivity extends Activity {
 			// 初回の起動時
 			if ( this.grid_view_adapter == null ) {
 				this.swipeRefreshLayout.setRefreshing(true); // アニメーション開始
-				onRefresh(); // 更新処理
+				this.image_list.clear();	// 画像リストをクリアする
+				startLoader(0);        		// ローダーの起動
 			}
 			// 画面が回転されたとき
 			else {
@@ -122,8 +127,6 @@ public class MainActivity extends Activity {
 	    // 取得データの更新
 		@Override
 		public void onRefresh() {
-			this.image_list.clear();	// 画像リストをクリアする
-			startLoader(0);        		// ローダーの起動
 		}
 
 		@Override
@@ -135,20 +138,12 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void onLoadFinished(Loader<String> loader, String data) {
+			this.swipeRefreshLayout.setRefreshing(false);
 			if (data == null) return;
 			this.parse.loadJson(data); // APIのレスポンスを解析する
-
 			if ( this.grid_view_adapter == null ) { // 初回起動時
 		          // アダプタをビューに関連づける
 				 setAdapter(getView().findViewById(R.id.gridView));
-			}
-			// ローダーIDが3より大きいとき（3回更新されたので更新を終了する）
-			if (3 < loader.getId()) {
-				this.grid_view_adapter.notifyDataSetChanged(); // 表示の更新
-				this.swipeRefreshLayout.setRefreshing(false);
-			}
-			else {
-				startLoader(loader.getId() + 1); // ローダーのIDに1を追加して再度URLを取得する
 			}
 		}
 
