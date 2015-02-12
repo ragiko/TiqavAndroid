@@ -1,23 +1,23 @@
 package com.rakuraku.android.akbgallery;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
-import android.widget.ImageView;
 
 import com.rakuraku.android.util.HttpAsyncLoader;
 
@@ -79,27 +79,49 @@ public class MainActivity extends Activity {
 
 			// カラム数を設定する（縦横向きに応じて値を変える）
 			gv.setNumColumns(getResources().getInteger(R.integer.num));
-
-			final ImageView im =  (ImageView)getView().findViewById(R.id.imageView);
-
+			
 			gv.setOnItemClickListener(
 					// グリッドビューのクリックリスナー
 					new OnItemClickListener() {
 						@Override
 						public void onItemClick(AdapterView<?> parent,	View view, int position, long id) {
-							grid_view_adapter.setStandardImage(position,im);
-							im.setVisibility(View.VISIBLE);	// 拡大画面を表示する
-						}
+							// カスタムビューを設定
+		                    LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(LAYOUT_INFLATER_SERVICE);
+		                    final View layout = inflater.inflate(R.layout.dialog, (ViewGroup)getView().findViewById(R.id.alertdialog_layout));
+							
+		                    // ポップアップする画像を決定
+		                    final ImageView im =  (ImageView)layout.findViewById(R.id.dialog_image);
+		                    grid_view_adapter.setStandardImage(position,im);
+		                    
+		                    new AlertDialog.Builder(getActivity())
+		            		// レイアウトを設定（カスタムダイアログ）
+		            		.setView(layout)
+
+		            		// メッセージを設定
+		            		.setMessage("画像を保存しますか？")
+
+		            		// Positiveボタン、リスナーを設定
+		            		.setPositiveButton(
+		            			"画像を保存",
+		            			new DialogInterface.OnClickListener() {
+
+		            				@Override
+		            				public void onClick(DialogInterface dialog, int which) {
+		            					// 画像を保存する処理
+		            				}
+		            			})
+
+		            		// Negativeボタン、リスナーを設定
+		            		.setNegativeButton(
+		            			"キャンセル",
+		            			new DialogInterface.OnClickListener() {
+		            				@Override
+		            				public void onClick(DialogInterface dialog, int which) {
+		            				}
+		            			})
+		            		.show();
+		            	}
 	        });
-			
-			((ImageView)getView().findViewById(R.id.imageView)).setOnClickListener(
-					// 拡大表示画面のクリックリスナー 
-					new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-				               im.setVisibility(View.INVISIBLE); // 拡大画面を非表示にする
-						}
-			});
 			
 			// 初回の起動時
 			if ( this.grid_view_adapter == null ) {
